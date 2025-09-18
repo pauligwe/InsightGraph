@@ -1,0 +1,1 @@
+A Ruby on Rails + GraphQL API for building and querying knowledge graphs from entity-relationship data
