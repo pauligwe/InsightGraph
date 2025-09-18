@@ -1,0 +1,32 @@
+# Team/Project Management Knowledge Graph ERD
+# Entities and relationships for Phase 1 of the Knowledge Graph API project.
+
++-----------------+        +-----------------+
+|     Person      |        |     Project     |
++-----------------+        +-----------------+
+| id (PK)         |        | id (PK)         |
+| name            |        | name            |
+| role            |        | description     |
+| metadata (JSON) |        | status          |
++-----------------+        | metadata (JSON) |
+       |                   +-----------------+
+       | works_on
+       | manages
+       v
++-----------------+
+|      Task       |
++-----------------+
+| id (PK)         |
+| title           |
+| status          |
+| due_date        |
+| metadata (JSON) |
+| project_id (FK) |
+| assignee_id(FK) |
++-----------------+
+
+# Relationships:
+# Person --works_on--> Project
+# Person --manages--> Project
+# Task --assigned_to--> Person
+# Task --part_of--> Project
