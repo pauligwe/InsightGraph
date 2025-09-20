@@ -21,11 +21,34 @@ module Types
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
-    # TODO: remove me
-    field :test_field, String, null: false,
-      description: "An example field added by the generator"
-    def test_field
-      "Hello World!"
+    # Get one person
+    field :person, Types::PersonType, null: true do
+      argument :id, ID, required: true
+    end
+
+    def person(id:)
+      Person.find(id)
+    end
+
+    # Get all people
+    field :people, [Types::PersonType], null: true
+
+    def people
+      Person.all
+    end
+
+    # Get all projects
+    field :projects, [Types::ProjectType], null: true
+
+    def projects
+      Project.all
+    end
+
+    # Get all tasks
+    field :tasks, [Types::TaskType], null: true
+
+    def tasks
+      Task.all
     end
   end
 end
