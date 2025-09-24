@@ -2,53 +2,68 @@
 
 module Types
   class QueryType < Types::BaseObject
-    field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
-      argument :id, ID, required: true, description: "ID of the object."
-    end
-
-    def node(id:)
-      context.schema.object_from_id(id, context)
-    end
-
-    field :nodes, [Types::NodeType, null: true], null: true, description: "Fetches a list of objects given a list of IDs." do
-      argument :ids, [ID], required: true, description: "IDs of the objects."
-    end
-
-    def nodes(ids:)
-      ids.map { |id| context.schema.object_from_id(id, context) }
-    end
-
-    # Add root-level fields here.
-    # They will be entry points for queries on your schema.
-
     # Get one person
     field :person, Types::PersonType, null: true do
       argument :id, ID, required: true
     end
 
     def person(id:)
-      Person.find(id)
+      Person.find_by(id: id)
     end
 
     # Get all people
-    field :people, [Types::PersonType], null: true
+    field :people, [Types::PersonType], null: true do
+      argument :age, Integer, required: false
+      argument :role, String, required: false
+    end
 
-    def people
-      Person.all
+    def people(age: nil, role: nil)
+      scope = Person.all
+      scope = scope.where(age: age) if age.present?
+      scope = scope.where(role: role) if role.present?
+      scope
+    end
+
+    # Get one project
+    field :project, Types::ProjectType, null: true do
+      argument :id, ID, required: true
+    end
+
+    def project(id:)
+      Project.find_by(id: id)
     end
 
     # Get all projects
-    field :projects, [Types::ProjectType], null: true
-
-    def projects
-      Project.all
+    field :projects, [Types::ProjectType], null: true do
+      argument :statuses, [String], required: false
     end
 
-    # Get all tasks
-    field :tasks, [Types::TaskType], null: true
+    def projects(statuses: nil)
+      scope = Project.all
+      scope = scope.where(status: statuses) if statuses.present?
+      scope
+    end
 
-    def tasks
-      Task.all
+    # Get one task
+    field :task, Types::TaskType, null: true do
+      argument :id, ID, required: true
+    end
+
+    def task(id:)
+      Task.find_by(id: id)
+    end
+    
+    # Get all tasks with filtering
+    field :tasks, [Types::TaskType], null: true do
+      argument :statuses, [String], required: false 
+      argument :project_id, ID, required: false
+    end
+
+    def tasks(statuses: nil, project_id: nil)
+      scope = Task.all
+      scope = scope.where(status: statuses) if statuses.present?
+      scope = scope.where(project_id: project_id) if project_id.present?
+      scope
     end
   end
 end
