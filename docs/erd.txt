@@ -1,32 +1,118 @@
-# Team/Project Management Knowledge Graph ERD
-# Entities and relationships for Phase 1 of the Knowledge Graph API project.
+# InsightGraph - Entity Relationship Diagram
+# Last Updated: September 24, 2025
+
+## Database Schema
 
 +-----------------+        +-----------------+
 |     Person      |        |     Project     |
 +-----------------+        +-----------------+
 | id (PK)         |        | id (PK)         |
-| name            |        | name            |
+| name (NOT NULL) |        | name (NOT NULL) |
 | role            |        | description     |
-| metadata (JSON) |        | status          |
-+-----------------+        | metadata (JSON) |
+| metadata (JSONB)|        | status          |
+| created_at      |        | metadata (JSONB)|
+| updated_at      |        | created_at      |
++-----------------+        | updated_at      |
        |                   +-----------------+
-       | works_on
-       | manages
-       v
-+-----------------+
+       | has_many :tasks            |
+       | (foreign_key: assignee_id) | has_many :tasks
+       |                            |
+       | has_many :projects         |
+       | (through: :tasks)          |
+       v                            v
++-----------------+<-----------------+
 |      Task       |
 +-----------------+
 | id (PK)         |
 | title           |
 | status          |
-| due_date        |
-| metadata (JSON) |
-| project_id (FK) |
-| assignee_id(FK) |
+| due_date (DATE) |
+| metadata (JSONB)|
+| project_id (FK) | --belongs_to--> Project
+| assignee_id(FK) | --belongs_to--> Person (as assignee)
+| created_at      |
+| updated_at      |
 +-----------------+
 
-# Relationships:
-# Person --works_on--> Project
-# Person --manages--> Project
-# Task --assigned_to--> Person
-# Task --part_of--> Project
+## Relationships Summary:
+- Person --has_many--> Task (as assignee, foreign_key: assignee_id)
+- Person --has_many--> Project (through: tasks)
+- Project --has_many--> Task (foreign_key: project_id)  
+- Project --has_many--> Person (through: tasks)
+- Task --belongs_to--> Person (as assignee)
+- Task --belongs_to--> Project
+
+## GraphQL API Structure
+
+### Queries:
+- person(id: ID!): Person
+- people(role: String): [Person]
+- project(id: ID!): Project  
+- projects(status: [String]): [Project]
+- task(id: ID!): Task
+- tasks(status: [String], project_id: ID): [Task]
+
+### Mutations:
+
+#### Person CRUD:
+- createPerson(name: String!, role: String): PersonPayload
+- updatePerson(id: ID!, name: String, role: String, metadata: JSON): PersonPayload
+- deletePerson(id: ID!): DeletePayload
+
+#### Project CRUD:
+- createProject(name: String!, description: String, status: String, metadata: JSON): ProjectPayload
+- updateProject(id: ID!, name: String, description: String, status: String, metadata: JSON): ProjectPayload
+- deleteProject(id: ID!): DeletePayload
+
+#### Task CRUD:
+- createTask(title: String!, project_id: ID!, assignee_id: ID!, status: String, due_date: Date, metadata: JSON): TaskPayload
+- updateTask(id: ID!, title: String, status: String, due_date: Date, metadata: JSON, project_id: ID, assignee_id: ID): TaskPayload
+- deleteTask(id: ID!): DeletePayload
+
+### GraphQL Type Fields:
+
+#### PersonType:
+- id: ID!
+- name: String!
+- role: String
+- metadata: JSON
+- created_at: DateTime!
+- updated_at: DateTime!
+- tasks: [Task] (associated tasks where person is assignee)
+- projects: [Project] (projects through tasks)
+
+#### ProjectType:
+- id: ID!
+- name: String!
+- description: String
+- status: String
+- metadata: JSON
+- created_at: DateTime!
+- updated_at: DateTime!
+- tasks: [Task] (all tasks in this project)
+- people: [Person] (people assigned to tasks in this project)
+
+#### TaskType:
+- id: ID!
+- title: String
+- status: String
+- due_date: Date
+- metadata: JSON
+- created_at: DateTime!
+- updated_at: DateTime!
+- project: Project! (the project this task belongs to)
+- assignee: Person! (the person assigned to this task)
+
+### Payload Types:
+- PersonPayload: { person: Person, errors: [String!]! }
+- ProjectPayload: { project: Project, errors: [String!]! }
+- TaskPayload: { task: Task, errors: [String!]! }
+- DeletePayload: { success: Boolean!, errors: [String!]! }
+
+## Notes:
+- All entities use JSONB metadata fields for flexible data storage
+- PostgreSQL database with proper foreign key constraints
+- Task entity is the junction table connecting Person and Project
+- GraphQL API provides full CRUD operations for all entities
+- Comprehensive query filtering available (by role, status, project_id)
+- All mutations return standardized payload types with error handling
