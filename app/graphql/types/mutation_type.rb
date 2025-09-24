@@ -1,10 +1,9 @@
-# frozen_string_literal: true
-
 module Types
   class MutationType < Types::BaseObject
     # Person mutations
     field :create_person, mutation: Mutations::CreatePerson
     field :update_person, mutation: Mutations::UpdatePerson
+    field :delete_person, mutation: Mutations::DeletePerson
     
     # Project mutations
     field :create_project, mutation: Mutations::CreateProject
