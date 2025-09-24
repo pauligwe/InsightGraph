@@ -8,17 +8,15 @@ module Mutations
     field :person, Types::PersonType, null: true
     field :errors, [String], null: false
 
-    def resolve(id:, name: nil, role: nil, metadata: nil)
+    def resolve(id:, **attributes)
       person = Person.find_by(id: id)
-      return { person: nil, errors: ['Person not found'] } unless person
+      return { person: nil, errors: ["Person not found"] } if person.nil?
 
-      person.name = name if name
-      person.role = role if role
-      person.metadata = metadata if metadata
-      
-      if person.save
+      if person.update(attributes.compact)
         { person: person, errors: [] }
       else
         { person: nil, errors: person.errors.full_messages }
       end
     end
+  end
+end
