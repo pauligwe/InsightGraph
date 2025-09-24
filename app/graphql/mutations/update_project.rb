@@ -13,12 +13,7 @@ module Mutations
       project = Project.find_by(id: id)
       return { project: nil, errors: ['Project not found'] } unless project
 
-      project.name = name if name
-      project.description = description if description
-      project.status = status if status
-      project.metadata = metadata if metadata
-      
-      if project.save
+      if project.update(name: name, description: description, status: status, metadata: metadata)
         { project: project, errors: [] }
       else
         { project: nil, errors: project.errors.full_messages }
