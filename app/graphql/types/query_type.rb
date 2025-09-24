@@ -13,13 +13,11 @@ module Types
 
     # Get all people
     field :people, [Types::PersonType], null: true do
-      argument :age, Integer, required: false
       argument :role, String, required: false
     end
 
-    def people(age: nil, role: nil)
+    def people(role: nil)
       scope = Person.all
-      scope = scope.where(age: age) if age.present?
       scope = scope.where(role: role) if role.present?
       scope
     end
@@ -35,12 +33,12 @@ module Types
 
     # Get all projects
     field :projects, [Types::ProjectType], null: true do
-      argument :statuses, [String], required: false
+      argument :status, [String], required: false
     end
 
-    def projects(statuses: nil)
+    def projects(status: nil)
       scope = Project.all
-      scope = scope.where(status: statuses) if statuses.present?
+      scope = scope.where(status: status) if status.present?
       scope
     end
 
@@ -55,13 +53,13 @@ module Types
     
     # Get all tasks with filtering
     field :tasks, [Types::TaskType], null: true do
-      argument :statuses, [String], required: false 
+      argument :status, [String], required: false
       argument :project_id, ID, required: false
     end
 
-    def tasks(statuses: nil, project_id: nil)
+    def tasks(status: nil, project_id: nil)
       scope = Task.all
-      scope = scope.where(status: statuses) if statuses.present?
+      scope = scope.where(status: status) if status.present?
       scope = scope.where(project_id: project_id) if project_id.present?
       scope
     end
